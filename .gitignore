@@ -1,0 +1,5 @@
+archive/
+models/
+paysim_*/
+venv/
+arch.mermaid

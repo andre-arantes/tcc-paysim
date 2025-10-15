@@ -21,7 +21,7 @@ def main():
         
     spark.sparkContext.setLogLevel("ERROR")
 
-    subset_path = 'data/processed/paysim_subset_200k.parquet'
+    subset_path = 'data/processed/paysim_subset_1M.parquet'
     pipeline_output_path = 'models/preprocessing_pipeline_final'
     transformed_data_path = 'data/processed/transformed_data.parquet'
 
@@ -33,21 +33,19 @@ def main():
     df_featured = df_cleaned.withColumn(
         "suspicious_amount",
         when((col("type").isin("TRANSFER", "CASH_OUT")) & (col("amount") > col("oldbalanceOrg")), 1).otherwise(0)
+    ).withColumn(
+        "errorBalanceOrig",
+        col("newbalanceOrig") + col("amount") - col("oldbalanceOrg")
+    ) \
+    .withColumn(
+        "errorBalanceDest",
+        col("oldbalanceDest") + col("amount") - col("newbalanceDest")
     )
-
-    # fraud_count = df_featured.filter(col("isFraud") == 1).count()
-    # total_count = df_featured.count()
-    # balance_ratio = fraud_count / total_count
-    
-    # df_featured = df_featured.withColumn("weight", 
-    #     when(col("isFraud") == 1, 1 - balance_ratio).otherwise(balance_ratio)
-    # )
-    # print("Added 'weight' column for class balancing.")
 
     type_indexer = StringIndexer(inputCol="type", outputCol="typeIndex", handleInvalid="keep")
     type_encoder = OneHotEncoder(inputCol="typeIndex", outputCol="typeVec")
     
-    numerical_cols = ["step", "amount", "oldbalanceOrg", "oldbalanceDest", "isFlaggedFraud"]
+    numerical_cols = ["step", "amount", "oldbalanceOrg", "oldbalanceDest", "isFlaggedFraud", "errorBalanceOrig", "errorBalanceDest"]
     if USE_SUSPICIOUS_FEATURE:
         numerical_cols.append("suspicious_amount")
 

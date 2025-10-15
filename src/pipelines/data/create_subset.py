@@ -54,8 +54,8 @@ def create_stratified_subset(input_path, output_path, target_rows):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Create a stratified subset of the PaySim dataset.")
     parser.add_argument('--input', default='data/raw/paysim.csv', help='Path to the input CSV file.')
-    parser.add_argument('--output', default='data/processed/paysim_subset_200k.parquet', help='Path for the output Parquet file.')
-    parser.add_argument('--rows', type=int, default=200000, help='Target number of rows for the subset.')
-    
+    parser.add_argument('--output', default='data/processed/paysim_subset_2M.parquet', help='Path for the output Parquet file.')
+    parser.add_argument('--rows', type=int, default=2_000_000, help='Target number of rows for the subset.')
+
     args = parser.parse_args()
     create_stratified_subset(args.input, args.output, args.rows)

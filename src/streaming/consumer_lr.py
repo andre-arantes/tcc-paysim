@@ -101,6 +101,12 @@ def run_streaming_evaluation_lr():
     df_featured = df_parsed.withColumn(
         "suspicious_amount",
         when((col("type").isin("TRANSFER", "CASH_OUT")) & (col("amount") > col("oldbalanceOrg")), 1).otherwise(0)
+    ).withColumn(
+        "errorBalanceOrig",
+        col("newbalanceOrig") + col("amount") - col("oldbalanceOrg")
+    ).withColumn(
+        "errorBalanceDest",
+        col("oldbalanceDest") + col("amount") - col("newbalanceDest")
     )
 
     df_transformed = pipeline_model.transform(df_featured)

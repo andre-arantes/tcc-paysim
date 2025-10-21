@@ -1,18 +1,11 @@
-# File: 2_preprocess_data.py
-import pyspark
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, when
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import StringIndexer, OneHotEncoder, VectorAssembler, StandardScaler
 
-# A flag ainda é útil para gerar diferentes datasets pré-processados
 USE_SUSPICIOUS_FEATURE = True 
 
 def main():
-    """
-    Script dedicado a executar todo o pré-processamento pesado e salvar
-    o DataFrame transformado para ser usado pelos scripts de treinamento.
-    """
     spark = SparkSession.builder \
         .appName("DataPreprocessing") \
         .config("spark.driver.memory", "6g") \
@@ -21,9 +14,9 @@ def main():
         
     spark.sparkContext.setLogLevel("ERROR")
 
-    subset_path = 'data/processed/paysim_subset_1M.parquet'
+    subset_path = 'data/processed/paysim_subset_500k.parquet'
     pipeline_output_path = 'models/preprocessing_pipeline_final'
-    transformed_data_path = 'data/processed/transformed_data.parquet'
+    transformed_data_path = 'data/processed/transformed_data_500k.parquet'
 
     print("Loading scaled subset...")
     df = spark.read.parquet(subset_path)

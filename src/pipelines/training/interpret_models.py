@@ -22,7 +22,7 @@ def interpret_models():
     # Caminhos atualizados relativos à raiz do projeto
     pipeline_path = 'models/preprocessing_pipeline_final'
     rf_model_path = 'models/best_rf_model_weighted'      
-    lr_model_path = 'models/best_lr_model_final'      
+    lr_model_path = 'models/best_lr_model_tuned'      
     xgb_model_path = 'models/best_xgb_model_final'    
     
     print("Loading saved pipeline...")

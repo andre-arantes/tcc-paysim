@@ -14,9 +14,9 @@ def evaluate_thresholds():
 
     spark.sparkContext.setLogLevel("ERROR")
 
-    transformed_data_path = 'data/processed/transformed_data.parquet'
+    transformed_data_path = 'data/processed/transformed_data_2M.parquet'
     # Carrega o modelo treinado sem técnicas de balanceamento para uma análise de threshold justa
-    model_path = 'models/best_rf_model_unbalanced'
+    model_path = 'models/best_rf_model_weighted'
 
     print("Loading preprocessed data and the unbalanced model...")
     df_transformed = spark.read.parquet(transformed_data_path)
@@ -49,6 +49,8 @@ def evaluate_thresholds():
     thresholds = [0.5, 0.75, 0.90, 0.95, 0.99]
 
     print("\n--- Evaluating Performance at Different Thresholds ---")
+    best_f1 = -1
+    best_threshold = -1
     for threshold in thresholds:
         print(f"\n--- Threshold: {threshold} ---")
         
@@ -59,15 +61,26 @@ def evaluate_thresholds():
         tp = preds_with_threshold.filter("prediction_adj = 1.0 AND isFraud = 1").count()
         fp = preds_with_threshold.filter("prediction_adj = 1.0 AND isFraud = 0").count()
         fn = preds_with_threshold.filter("prediction_adj = 0.0 AND isFraud = 1").count()
+        tn = preds_with_threshold.filter("prediction_adj = 0.0 AND isFraud = 0").count()
 
         precision = tp / (tp + fp) if (tp + fp) > 0 else 0
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0
         f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+        accuracy = (tp + tn) / (tp + tn + fp + fn) if (tp + tn + fp + fn) > 0 else 0 # Added Accuracy
 
         print(f"(TP: {tp}, FP: {fp}, FN: {fn})")
+        print(f"Acuracia: {accuracy:.4f}")
         print(f"Precisão: {precision:.4f}")
         print(f"Recall:   {recall:.4f}")
         print(f"F1-Score: {f1_score:.4f}")
+
+        if f1_score > best_f1:
+            best_f1 = f1_score
+            best_threshold = threshold
+
+        print("\n" + "="*50)
+        print(f"🏆 Best Threshold found for Random Forest: {best_threshold:.2f} (F1-Score: {best_f1:.4f})")
+        print("="*50)
 
     predictions.unpersist()
     spark.stop()

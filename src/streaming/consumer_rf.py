@@ -79,7 +79,7 @@ def run_streaming_inference():
     spark.sparkContext.setLogLevel("ERROR")
 
     pipeline_path = 'models/preprocessing_pipeline_final'
-    model_path = 'models/best_rf_model_final'
+    model_path = 'models/rf_best_cv'
 
     print("Loading saved pipeline and model...")
     pipeline_model = PipelineModel.load(pipeline_path)
@@ -109,6 +109,12 @@ def run_streaming_inference():
     df_featured = df_parsed.withColumn(
         "suspicious_amount",
         when((col("type").isin("TRANSFER", "CASH_OUT")) & (col("amount") > col("oldbalanceOrg")), 1).otherwise(0)
+    ).withColumn(
+        "errorBalanceOrig",
+        col("newbalanceOrig") + col("amount") - col("oldbalanceOrg")
+    ).withColumn(
+        "errorBalanceDest",
+        col("oldbalanceDest") + col("amount") - col("newbalanceDest")
     )
 
     df_transformed = pipeline_model.transform(df_featured)

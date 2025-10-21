@@ -85,7 +85,7 @@ def main():
     parser.add_argument('--server', default='localhost:9092', help='Endereço do servidor Kafka.')
     parser.add_argument('--interval', type=float, default=0.01, help='Intervalo em segundos entre mensagens.')
     # Limite padrão ajustado para 1000 para testes rápidos
-    parser.add_argument('--limit', type=int, default=10000, help='Número máximo de mensagens a enviar (para testes).')
+    parser.add_argument('--limit', type=int, default=100000, help='Número máximo de mensagens a enviar (para testes).')
     
     args = parser.parse_args()
     

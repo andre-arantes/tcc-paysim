@@ -2,7 +2,6 @@ from pyspark.sql.functions import col
 from pyspark.sql import SparkSession
 from pyspark.ml.classification import LogisticRegression, RandomForestClassifier
 from xgboost.spark import SparkXGBClassifier
-import catboost_spark
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator, BinaryClassificationEvaluator
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 
@@ -16,7 +15,7 @@ def main():
         
     spark.sparkContext.setLogLevel("ERROR")
 
-    transformed_data_path = 'data/processed/transformed_data_500k.parquet'
+    transformed_data_path = 'data/processed/transformed_data_1M.parquet'
     print(f"Loading preprocessed data from '{transformed_data_path}'...")
     df_transformed = spark.read.parquet(transformed_data_path)
 

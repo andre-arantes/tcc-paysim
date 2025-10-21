@@ -8,7 +8,7 @@ from pyspark.ml import PipelineModel
 from xgboost.spark import SparkXGBClassifierModel
 from pyspark.ml.functions import vector_to_array
 
-BEST_THRESHOLD = 0.5
+BEST_THRESHOLD = 0.95
 
 total_tp = 0
 total_fp = 0

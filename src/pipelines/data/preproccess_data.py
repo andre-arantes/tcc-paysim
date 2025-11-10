@@ -14,9 +14,9 @@ def main():
         
     spark.sparkContext.setLogLevel("ERROR")
 
-    subset_path = 'data/processed/paysim_subset_500k.parquet'
+    subset_path = 'data/processed/paysim_subset_2M.parquet'
     pipeline_output_path = 'models/preprocessing_pipeline_final'
-    transformed_data_path = 'data/processed/transformed_data_500k.parquet'
+    transformed_data_path = 'data/processed/transformed_data_2M.parquet'
 
     print("Loading scaled subset...")
     df = spark.read.parquet(subset_path)

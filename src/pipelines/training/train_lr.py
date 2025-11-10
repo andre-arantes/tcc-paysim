@@ -17,7 +17,7 @@ def main():
         
     spark.sparkContext.setLogLevel("ERROR")
 
-    transformed_data_path = 'data/processed/transformed_data.parquet'
+    transformed_data_path = 'data/processed/transformed_data_1M.parquet'
     model_output_path = 'models/best_lr_model_tuned' # Novo nome para o modelo otimizado
     
     logging.info("Loading preprocessed data...")

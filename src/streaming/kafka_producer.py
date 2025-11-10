@@ -32,18 +32,14 @@ def create_producer(server):
     print("Erro: Não foi possível conectar ao broker Kafka após várias tentativas.")
     return None
 
-def stream_transactions(producer, topic, file_path, interval, limit):
+def stream_transactions(producer, topic, file_path, interval):
     """Lê transações do CSV e as envia para o Kafka."""
     print(f"Iniciando stream de '{file_path}' para o tópico Kafka '{topic}'...")
     
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
-            print(f"Enviando um máximo de {limit} mensagens...")
             for i, row in enumerate(reader):
-                if limit is not None and i >= limit:
-                    print(f"Limite de {limit} mensagens atingido.")
-                    break
                 
                 try:
                     message = {
@@ -80,18 +76,16 @@ def main():
     """Função principal para parsear argumentos e iniciar o stream."""
     parser = argparse.ArgumentParser(description="Produtor Kafka para simular transações do PaySim.")
     # Caminho do arquivo corrigido para a estrutura do projeto
-    parser.add_argument('--file', default='data/raw/paysim.csv', help='Caminho para o arquivo CSV de entrada.')
+    parser.add_argument('--file', default='data/processed/test_data_csv_final/part-00000-c3da4479-6617-4d6d-b266-32a055a685b8-c000.csv', help='Caminho para o arquivo CSV de entrada.')
     parser.add_argument('--topic', default='transactions', help='Tópico Kafka para enviar as mensagens.')
     parser.add_argument('--server', default='localhost:9092', help='Endereço do servidor Kafka.')
     parser.add_argument('--interval', type=float, default=0.01, help='Intervalo em segundos entre mensagens.')
-    # Limite padrão ajustado para 1000 para testes rápidos
-    parser.add_argument('--limit', type=int, default=100000, help='Número máximo de mensagens a enviar (para testes).')
-    
+
     args = parser.parse_args()
     
     producer = create_producer(args.server)
     if producer:
-        stream_transactions(producer, args.topic, args.file, args.interval, args.limit)
+        stream_transactions(producer, args.topic, args.file, args.interval)
 
 if __name__ == "__main__":
     main()

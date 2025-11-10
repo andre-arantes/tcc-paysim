@@ -8,14 +8,14 @@ from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 def main():
     spark = SparkSession.builder \
         .appName("TuneAllModels") \
-        .config("spark.driver.memory", "10g") \
+        .config("spark.driver.memory", "8g") \
         .config("spark.jars.packages", "ml.dmlc:xgboost4j-spark_2.12:1.7.5") \
         .master("local[*]") \
         .getOrCreate()
         
     spark.sparkContext.setLogLevel("ERROR")
 
-    transformed_data_path = 'data/processed/transformed_data_1M.parquet'
+    transformed_data_path = 'data/processed/transformed_data_2M.parquet'
     print(f"Loading preprocessed data from '{transformed_data_path}'...")
     df_transformed = spark.read.parquet(transformed_data_path)
 
@@ -24,6 +24,18 @@ def main():
     
     validation_data.write.mode("overwrite").parquet("data/processed/validation_data.parquet")
     test_data.write.mode("overwrite").parquet("data/processed/test_data.parquet")
+    test_data_df = spark.read.parquet("data/processed/test_data.parquet")
+
+    print("Re-particionando para 1 e salvando como CSV único...")
+        
+    test_data_df.coalesce(1) \
+    .write \
+    .option("header", "true") \
+    .mode("overwrite") \
+    .csv("data/processed/test_data_csv_single")
+
+    print("Conjunto de teste salvo. Procure pelo arquivo CSV dentro do diretório 'test_data_csv_single'.")
+    
     print("Validation and Test sets saved for later use.")
 
     evaluator_f1 = MulticlassClassificationEvaluator(labelCol="isFraud", metricName="f1")
@@ -39,6 +51,8 @@ def main():
     lr_cv_model = lr_cv.fit(train_data)
     best_lr_model = lr_cv_model.bestModel
     best_lr_model.write().overwrite().save('models/lr_best_cv')
+
+    
     print("Best Logistic Regression model saved to 'models/lr_best_cv'")
     print(f"Best params: regParam={best_lr_model.getRegParam()}, elasticNetParam={best_lr_model.getElasticNetParam()}")
     print("\n--- Evaluating Best LR Model on Validation Set ---")
@@ -92,34 +106,6 @@ def main():
     print(f"Validation Accuracy: {xgb_accuracy:.4f}")
     print(f"Validation AUC: {xgb_auc:.4f}")
 
-    # print("\n" + "="*50)
-    # print("Tuning CatBoost...")
-    # print("="*50)
-    
-    # CatBoost também usa 'label' e pode se beneficiar do scale_pos_weight
-    # Reutilizamos as variáveis já calculadas para o XGBoost
-    # print(f"CatBoost 'scalePosWeight' will be set to: {scale_pos_weight_value:.2f}")
-
-    # cat = CatBoostClassifier(
-    #     featuresCol="features",
-    #     labelCol="label",
-    #     scalePosWeight=scale_pos_weight_value, # Parâmetro de peso para CatBoost
-    #     iterations=100, # Equivalente a n_estimators
-    #     depth=7,        # Equivalente a max_depth
-    #     randomSeed=42
-    # )
-    
-    # best_cat_model = cat.fit(train_data_xgb)
-    # best_cat_model.write().overwrite().save('models/catboost_best_cv')
-    # print("Best (and correctly weighted) CatBoost model saved to 'models/catboost_best_cv'")
-
-    # print("\n--- Evaluating Best CatBoost Model on Validation Set ---")
-    # Reutilizamos os avaliadores criados para o XGBoost, pois ambos usam a coluna 'label'
-    # cat_predictions = best_cat_model.transform(validation_data_xgb)
-    # cat_accuracy = evaluator_acc_xgb.evaluate(cat_predictions)
-    # cat_auc = evaluator_auc_xgb.evaluate(cat_predictions)
-    # print(f"Validation Accuracy: {cat_accuracy:.4f}")
-    # print(f"Validation AUC: {cat_auc:.4f}")
 
     print("\n✅ All models have been tuned and saved.")
     spark.stop()

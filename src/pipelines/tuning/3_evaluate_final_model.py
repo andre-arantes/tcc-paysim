@@ -99,8 +99,8 @@ def final_evaluation(model_type, threshold):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Perform final evaluation on the test set.")
-    parser.add_argument('--model', default='RF', help="Model to evaluate: 'RF', 'LR', or 'XGB'.")
-    parser.add_argument('--threshold', type=float, default=0.5, help="Decision threshold to apply.")
+    parser.add_argument('--model', default='XGB', help="Model to evaluate: 'RF', 'LR', or 'XGB'.")
+    parser.add_argument('--threshold', type=float, default=0.99, help="Decision threshold to apply.")
 
 
     args = parser.parse_args()

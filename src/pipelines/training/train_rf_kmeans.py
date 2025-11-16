@@ -24,16 +24,19 @@ def main():
         
     spark.sparkContext.setLogLevel("ERROR")
 
-    transformed_data_path = 'data/processed/transformed_data_1M.parquet'
+    transformed_data_path = 'data/processed/transformed_data_2M.parquet'
     model_output_path = f'models/best_rf_model_kmeans_{int(TARGET_NON_FRAUD_PERCENTAGE*100)}NF' 
 
     logging.info("Loading preprocessed data...")
     df_transformed = spark.read.parquet(transformed_data_path)
 
-    (train_data, test_data) = df_transformed.randomSplit([0.8, 0.2], seed=42)
-    logging.info(f"Data split into Training ({train_data.count()} rows) and Test ({test_data.count()} rows).")
+    # Use 60/20/20 split: Train / Validation / Test
+    (train_data, validation_data, test_data) = df_transformed.randomSplit([0.6, 0.2, 0.2], seed=42)
+    logging.info(f"Data split into Training ({train_data.count()} rows), Validation ({validation_data.count()} rows) and Test ({test_data.count()} rows).")
     
+    # Persist commonly accessed sets. K-means undersampling will be applied only on `train_data`.
     train_data.persist()
+    validation_data.persist()
     test_data.persist()
 
     fraud_df = train_data.filter(col("isFraud") == 1)
@@ -124,6 +127,8 @@ def main():
     logging.info(f"F1-Score (fraud):  {f1_score:.4f}")
     
     predictions.unpersist()
+    # cleanup persisted validation and test sets
+    validation_data.unpersist()
     test_data.unpersist()
 
     rf_model.write().overwrite().save(model_output_path)

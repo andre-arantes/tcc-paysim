@@ -27,13 +27,20 @@ def main():
     test_data_df = spark.read.parquet("data/processed/test_data.parquet")
 
     print("Re-particionando para 1 e salvando como CSV único...")
-        
-    test_data_df.coalesce(1) \
-    .write \
-    .option("header", "true") \
-    .mode("overwrite") \
-    .csv("data/processed/test_data_csv_single")
 
+    # Convert vector UDT columns to comma-separated strings so CSV write succeeds.
+    from pyspark.sql.functions import array_join
+    from pyspark.ml.functions import vector_to_array
+
+    vector_columns = ["numericalFeatures", "scaledNumericalFeatures", "typeVec", "features"]
+    df_test = test_data_df
+    for vc in vector_columns:
+        if vc in df_test.columns:
+            df_test = df_test.withColumn(vc + "_str", array_join(vector_to_array(col(vc)), ",")) \
+                         .drop(vc) \
+                         .withColumnRenamed(vc + "_str", vc)
+
+    df_test.repartition(1).write.option("header", "true").mode("overwrite").csv("data/processed/test_data_csv_single")
     print("Conjunto de teste salvo. Procure pelo arquivo CSV dentro do diretório 'test_data_csv_single'.")
     
     print("Validation and Test sets saved for later use.")

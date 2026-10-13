@@ -1,6 +1,22 @@
-archive/
-models/
-paysim_*/
-venv/
-arch.mermaid
+# Data and generated artifacts
+/data/
 paysim.csv
+paysim_*/
+models/
+archive/
+arch.mermaid
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+spark-warehouse/
+metastore_db/
+derby.log
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

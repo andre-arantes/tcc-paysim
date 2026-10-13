@@ -1,0 +1,6 @@
+# Arquivo: requirements.txt
+
+pyspark
+kafka-python
+scikit-learn
+xgboost
